@@ -9,6 +9,14 @@
 #  http://www.opensource.org/licenses/mit-license.php
 #
 
+from __future__ import division
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import input
+from builtins import map
+from past.utils import old_div
+from builtins import object
 __version__ = "0.3"
 __date__ = "2016-10-02"
 
@@ -147,7 +155,7 @@ import time
 import optparse
 import hashlib
 import pdb
-import ConfigParser
+import configparser
 from itertools import chain
 from fnmatch import fnmatch
 
@@ -202,7 +210,7 @@ class ActionsInteractive(ActionsMixin):
 
         #interactive deletion mode
         if interactive:
-            cli_input = input("Do you really want to delete %s [N]/Y" % filep)
+            cli_input = eval(input("Do you really want to delete %s [N]/Y" % filep))
             if cli_input == "Y":
                 print(("DELETING:  %s" % filep))
                 try:
@@ -244,7 +252,7 @@ class FileUtils(object):
             pdb.set_trace()
 
         try:
-            fp = open(path)
+            fp = open(path, "rb")
             checksum = hashlib.md5()
             while True:
                 dbuffer = fp.read(8192)
@@ -455,7 +463,7 @@ class Liten(FileUtils):
 
         if self.verbose:
             print(("Printing dups over %s MB using md5 checksum: \
-            [SIZE] [ORIG] [DUP] " % int(byteSizeThreshold/1048576)))
+            [SIZE] [ORIG] [DUP] " % int(old_div(byteSizeThreshold,1048576))))
 
         for root, _, files in main_path:
             for filep in files:
@@ -517,20 +525,20 @@ class Liten(FileUtils):
                                     orig_path = self.checksum_cache_key[checksum]['fullPath']
                                     orig_mod_date = self.checksum_cache_key[checksum]['modDate']
                                     if self.verbose:
-                                        print((byte_size/1048576, "MB ", "ORIG: ",\
+                                        print((old_div(byte_size,1048576), "MB ", "ORIG: ",\
                                         orig_path, "DUPE: ", path))
 
                                     #Write separator and original line
                                     report.writerow("")
                                     report.writerow([orig_path,
-                                        "%d MB" % (byte_size/1048576), orig_mod_date])
+                                        "%d MB" % (old_div(byte_size,1048576)), orig_mod_date])
 
                                     #Gets Duplicates Modification Date
                                     dupeModDate = self.makeCreateDate(path)
 
                                     #Write duplicate line
                                     report.writerow([path,
-                                        "%d MB" % (byte_size/1048576), dupeModDate])
+                                        "%d MB" % (old_div(byte_size,1048576)), dupeModDate])
 
                                     #Execute remove() action from ActionMixin
                                     self.handler.remove(path)
@@ -559,12 +567,12 @@ class Liten(FileUtils):
             if self.config:
                 print(("Used config file:            ",self.config))
             print(("Total Files Searched:        ", record_count))
-            print(("Wasted Space in Duplicates:  ", byte_count/1048576, " MB"))
+            print(("Wasted Space in Duplicates:  ", old_div(byte_count,1048576), " MB"))
             print(("Report Generated at:         ", self.reportPath))
             #get finish time
             end = time.time()
             timer = end - start
-            timer = int(timer/60)
+            timer = int(old_div(timer,60))
             print(("Search Time:                 ", timer, " minutes\n"))
 
         return  self.confirmed_dup_key   #Note returns a dictionary of all duplicate records
@@ -579,7 +587,7 @@ class ProcessConfig(object):
     def readConfig(self):
         """reads and processes config file and returns results"""
 
-        Config = ConfigParser.ConfigParser()
+        Config = configparser.ConfigParser()
         Config.read(self.filep)
         sections = Config.sections()
         for parameter in sections:
@@ -588,19 +596,19 @@ class ProcessConfig(object):
                 path = Config.items(parameter)[0][1]
                 if LITEN_DEBUG_MODE == 1:
                     print(("Config file path: %s" % path))
-            except ConfigParser.Error:
+            except configparser.Error:
                 path = None
             try:
                 pattern = Config.items(parameter)[1][1]
                 if LITEN_DEBUG_MODE == 1:
                     print(("Config file pattern: %s" % pattern))
-            except ConfigParser.Error:
+            except configparser.Error:
                 pattern = None
             try:
                 size = Config.items(parameter)[2][1]
                 if LITEN_DEBUG_MODE == 1:
                     print(("Config file size: %s" % size))
-            except ConfigParser.Error:
+            except configparser.Error:
                 size = None
         return path, size, pattern
 
@@ -672,7 +680,7 @@ class LitenController(object):
                             config = options.config)
                 start.diskWalker()
                 sys.exit(0)
-            except ConfigParser.Error as err:
+            except configparser.Error as err:
                 print(("Problem parsing config file: %s" % options.config))
                 print(err)
                 sys.exit(1)

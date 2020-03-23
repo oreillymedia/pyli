@@ -438,7 +438,7 @@ class Liten(FileUtils):
                 pdb.set_trace()
 
         #Local Variables
-        report = csv.writer(open(self.reportPath, 'wb'), dialect='excel-tab')
+        report = csv.writer(open(self.reportPath, 'w'), dialect='excel-tab')
         #  write header
         report.writerow("Path Size ModDate".split())
 

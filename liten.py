@@ -440,7 +440,7 @@ class Liten(FileUtils):
         #Local Variables
         report = csv.writer(open(self.reportPath, 'wb'), dialect='excel-tab')
         #  write header
-        report.writerow("Path Size ModDate".split())
+        report.writerow(b"Path Size ModDate".split())
 
         if isinstance(self.spath, str):
             main_path = os.walk(self.spath)
